@@ -1,20 +1,30 @@
-// src/views/ProductForm.jsx - Admin formulär med rabatt min 1% max 100%
+// Importerar React och hooks
 import React, { useEffect, useState } from "react";
+
+// Importerar routing-funktioner
 import { useParams, useNavigate, Link } from "react-router-dom";
+
+// Importerar komponenter från Material UI
 import {
   Box, Typography, TextField, Button, Alert,
   CircularProgress, Paper, Snackbar, MenuItem,
   Select, InputLabel, FormControl, OutlinedInput, Chip,
 } from "@mui/material";
+
+// Importerar ikoner
 import SaveIcon from "@mui/icons-material/Save";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
+// Importerar API-funktioner
 import { createProduct, getProduct, updateProduct } from "../services/api";
 
+// Lista med plattformar
 const ALL_PLATFORMS = [
   "PC", "PlayStation 4", "PlayStation 5",
   "Xbox Series X", "Xbox One", "Nintendo Switch"
 ];
 
+// Lista med genrer
 const ALL_GENRES = [
   "Action", "Äventyr", "RPG", "Sport", "Racing", "Strategi",
   "Skräck", "Pussel", "Fighting", "Simulation", "Shooter",
@@ -22,28 +32,46 @@ const ALL_GENRES = [
   "Musik", "Dans", "Familj"
 ];
 
+// Tomt formulär som startvärde
 const emptyForm = {
-  title: "", description: "", price: "",
-  discountPercent: 0, imageUrl: "", genres: [], platforms: [],
+  title: "",
+  description: "",
+  price: "",
+  discountPercent: 0,
+  imageUrl: "",
+  genres: [],
+  platforms: [],
 };
 
 export default function ProductForm() {
+  // Hämtar id från URL om man redigerar ett spel
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // Kollar om formuläret används för redigering
   const isEditing = Boolean(id);
+
+  // States för formulär, laddning, sparning och fel
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  // State för snackbar-meddelande
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
+  // Hämtar produktdata om man redigerar ett spel
   useEffect(() => {
     if (!isEditing) return;
+
     getProduct(id)
       .then((res) => {
         const p = res.data;
-        const genres = Array.isArray(p.genres) ? p.genres :
-          (p.genre ? [p.genre] : []);
+
+        const genres = Array.isArray(p.genres)
+          ? p.genres
+          : (p.genre ? [p.genre] : []);
+
         setForm({
           title: p.title || "",
           description: p.description || "",
@@ -58,19 +86,24 @@ export default function ProductForm() {
       .finally(() => setLoading(false));
   }, [id, isEditing]);
 
+  // Sparar formuläret
   const handleSubmit = async () => {
+    // Enkel validering
     if (!form.title || !form.price || !form.description) {
       setError("Titel, beskrivning och pris är obligatoriska.");
       return;
     }
+
     if (parseFloat(form.price) < 0) {
       setError("Priset kan inte vara negativt.");
       return;
     }
+
     if (form.discountPercent !== 0 && (form.discountPercent < 1 || form.discountPercent > 100)) {
       setError("Rabatten måste vara 0 (ingen rabatt) eller mellan 1-100%.");
       return;
     }
+
     if (form.genres.length === 0) {
       setError("Välj minst en genre.");
       return;
@@ -78,20 +111,24 @@ export default function ProductForm() {
 
     setSaving(true);
     setError(null);
+
     try {
       const data = {
         ...form,
         price: parseFloat(form.price),
         discountPercent: form.discountPercent,
-        genre: form.genres[0],
+        genre: form.genres[0], // första genren sparas också som huvudgenre
         genres: JSON.stringify(form.genres),
         platforms: form.platforms,
       };
+
       if (isEditing) {
+        // Uppdaterar spel
         await updateProduct(id, data);
         setSnackbar({ open: true, message: "Spelet har uppdaterats! ✅" });
         setTimeout(() => navigate(`/products/${id}`), 1500);
       } else {
+        // Skapar nytt spel
         const res = await createProduct(data);
         setSnackbar({ open: true, message: "Spelet har lagts till! 🎮" });
         setTimeout(() => navigate(`/products/${res.data.id}`), 1500);
@@ -103,26 +140,52 @@ export default function ProductForm() {
     }
   };
 
-  if (loading) return <Box display="flex" justifyContent="center" mt={8}><CircularProgress color="secondary" /></Box>;
+  // Visar laddning om produktdata hämtas
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" mt={8}>
+        <CircularProgress color="secondary" />
+      </Box>
+    );
+  }
 
   return (
     <Box maxWidth={700} mx="auto">
-      <Button startIcon={<ArrowBackIcon />} component={Link} to="/" sx={{ mb: 2 }}>Tillbaka</Button>
+      {/* Tillbaka-knapp */}
+      <Button startIcon={<ArrowBackIcon />} component={Link} to="/" sx={{ mb: 2 }}>
+        Tillbaka
+      </Button>
+
       <Paper sx={{ p: 4, bgcolor: "background.paper" }}>
         <Typography variant="h5" fontWeight="bold" mb={3} color="secondary.main">
           {isEditing ? "✏️ Redigera spel" : "🎮 Lägg till nytt spel"}
         </Typography>
+
+        {/* Felmeddelande */}
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
         <Box display="flex" flexDirection="column" gap={2}>
+          {/* Titel */}
+          <TextField
+            label="Speltitel *"
+            name="title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            fullWidth
+          />
 
-          <TextField label="Speltitel *" name="title" value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })} fullWidth />
-
-          <TextField label="Beskrivning *" name="description" value={form.description}
+          {/* Beskrivning */}
+          <TextField
+            label="Beskrivning *"
+            name="description"
+            value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            fullWidth multiline rows={4} />
+            fullWidth
+            multiline
+            rows={4}
+          />
 
-          {/* Pris - tomt fält, minsta 0 */}
+          {/* Pris */}
           <TextField
             label="Pris (kr) *"
             type="number"
@@ -133,6 +196,7 @@ export default function ProductForm() {
                 setForm({ ...form, price: 0 });
                 return;
               }
+
               const val = Math.max(0, parseFloat(e.target.value) || 0);
               setForm({ ...form, price: val });
             }}
@@ -141,7 +205,7 @@ export default function ProductForm() {
             helperText="Minsta pris är 0 kr"
           />
 
-          {/* Rabatt - 0 = ingen, 1-100 = rabatt */}
+          {/* Rabatt */}
           <TextField
             label="Rabatt (%)"
             type="number"
@@ -152,6 +216,7 @@ export default function ProductForm() {
                 setForm({ ...form, discountPercent: 0 });
                 return;
               }
+
               const num = parseInt(e.target.value) || 0;
               const val = num === 0 ? 0 : Math.min(100, Math.max(1, num));
               setForm({ ...form, discountPercent: val });
@@ -165,20 +230,28 @@ export default function ProductForm() {
             }
           />
 
-          <TextField label="Bild-URL" value={form.imageUrl}
+          {/* Bildlänk */}
+          <TextField
+            label="Bild-URL"
+            value={form.imageUrl}
             onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-            fullWidth placeholder="https://..." />
+            fullWidth
+            placeholder="https://..."
+          />
 
           {/* Genrer */}
           <FormControl fullWidth>
             <InputLabel>Genrer * (välj en eller flera)</InputLabel>
             <Select
-              multiple value={form.genres}
+              multiple
+              value={form.genres}
               onChange={(e) => setForm({ ...form, genres: e.target.value })}
               input={<OutlinedInput label="Genrer * (välj en eller flera)" />}
               renderValue={(selected) => (
                 <Box display="flex" flexWrap="wrap" gap={0.5}>
-                  {selected.map((g) => <Chip key={g} label={g} size="small" color="secondary" />)}
+                  {selected.map((g) => (
+                    <Chip key={g} label={g} size="small" color="secondary" />
+                  ))}
                 </Box>
               )}
             >
@@ -194,12 +267,15 @@ export default function ProductForm() {
           <FormControl fullWidth>
             <InputLabel>Plattformar (välj en eller flera)</InputLabel>
             <Select
-              multiple value={form.platforms}
+              multiple
+              value={form.platforms}
               onChange={(e) => setForm({ ...form, platforms: e.target.value })}
               input={<OutlinedInput label="Plattformar (välj en eller flera)" />}
               renderValue={(selected) => (
                 <Box display="flex" flexWrap="wrap" gap={0.5}>
-                  {selected.map((p) => <Chip key={p} label={p} size="small" color="primary" />)}
+                  {selected.map((p) => (
+                    <Chip key={p} label={p} size="small" color="primary" />
+                  ))}
                 </Box>
               )}
             >
@@ -211,16 +287,30 @@ export default function ProductForm() {
             </Select>
           </FormControl>
 
-          <Button variant="contained" color="secondary" size="large"
-            startIcon={<SaveIcon />} onClick={handleSubmit} disabled={saving}>
+          {/* Spara-knapp */}
+          <Button
+            variant="contained"
+            color="secondary"
+            size="large"
+            startIcon={<SaveIcon />}
+            onClick={handleSubmit}
+            disabled={saving}
+          >
             {saving ? "Sparar..." : (isEditing ? "Spara ändringar" : "Skapa spel")}
           </Button>
         </Box>
       </Paper>
-      <Snackbar open={snackbar.open} autoHideDuration={3000}
+
+      {/* Meddelande efter sparning */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
-        <Alert severity="success" variant="filled">{snackbar.message}</Alert>
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" variant="filled">
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Box>
   );

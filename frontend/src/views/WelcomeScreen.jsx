@@ -1,11 +1,16 @@
-// src/views/WelcomeScreen.jsx - Flip-kort (video hanteras i App.jsx)
+// Importerar React och useState
 import React, { useState } from "react";
+
+// Importerar komponenter från Material UI
 import { Box, Typography, Button, TextField, Alert } from "@mui/material";
+
+// Importerar ikoner
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PersonIcon from "@mui/icons-material/Person";
 import FlipCameraAndroidIcon from "@mui/icons-material/FlipCameraAndroid";
 
+// CSS för flip-kortet
 const flipStyle = `
   .flip-container {
     perspective: 1000px;
@@ -51,10 +56,16 @@ const flipStyle = `
 `;
 
 export default function WelcomeScreen({ onSelectRole }) {
+  // State för att vända kortet
   const [flipped, setFlipped] = useState(false);
+
+  // State för lösenordet
   const [password, setPassword] = useState("");
+
+  // State för felmeddelande vid fel lösenord
   const [passwordError, setPasswordError] = useState(false);
 
+  // Kollar om admin-lösenordet är rätt
   const handleAdminLogin = () => {
     if (password === "admin123") {
       onSelectRole("admin");
@@ -72,28 +83,36 @@ export default function WelcomeScreen({ onSelectRole }) {
       minHeight="100vh"
       sx={{ position: "relative" }}
     >
+      {/* Lägger in CSS för flip-effekten */}
       <style>{flipStyle}</style>
 
       <Box position="relative" zIndex={1} display="flex" flexDirection="column" alignItems="center">
-        {/* Logo */}
+        {/* Logga */}
         <Box display="flex" alignItems="center" gap={2} mb={2}>
           <SportsEsportsIcon sx={{ fontSize: 60, color: "#7c4dff" }} />
-          <Typography variant="h2" fontWeight="bold"
-            sx={{ color: "#fff", textShadow: "0 0 20px #7c4dff, 0 0 60px #7c4dff44", letterSpacing: 3 }}>
+          <Typography
+            variant="h2"
+            fontWeight="bold"
+            sx={{ color: "#fff", textShadow: "0 0 20px #7c4dff, 0 0 60px #7c4dff44", letterSpacing: 3 }}
+          >
             Game19
           </Typography>
         </Box>
 
-        <Typography variant="h6" mb={4}
-          sx={{ color: "rgba(255,255,255,0.6)", letterSpacing: 2 }}>
+        {/* Kort text under loggan */}
+        <Typography
+          variant="h6"
+          mb={4}
+          sx={{ color: "rgba(255,255,255,0.6)", letterSpacing: 2 }}
+        >
           Din ultimata gaming-butik 🎮
         </Typography>
 
-        {/* Flip-kort */}
+        {/* Flip-kortet */}
         <div className="flip-container">
           <div className={`flip-inner ${flipped ? "flipped" : ""}`}>
 
-            {/* FRAMSIDA — Kund */}
+            {/* Framsida - kund */}
             <div className="flip-front">
               <Box>
                 <PersonIcon sx={{ fontSize: 70, color: "#00e676", mb: 1 }} />
@@ -104,20 +123,37 @@ export default function WelcomeScreen({ onSelectRole }) {
                   Bläddra bland spel, lägg till i varukorgen och betygsätt spel.
                 </Typography>
               </Box>
+
               <Box width="100%" display="flex" flexDirection="column" gap={1}>
-                <Button variant="contained" color="secondary" fullWidth size="large"
-                  onClick={() => onSelectRole("kund")}>
+                {/* Går vidare som kund */}
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  fullWidth
+                  size="large"
+                  onClick={() => onSelectRole("kund")}
+                >
                   Fortsätt som kund
                 </Button>
-                <Button variant="text" fullWidth startIcon={<FlipCameraAndroidIcon />}
-                  onClick={() => { setFlipped(true); setPasswordError(false); setPassword(""); }}
-                  sx={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
+
+                {/* Vänder kortet till adminsidan */}
+                <Button
+                  variant="text"
+                  fullWidth
+                  startIcon={<FlipCameraAndroidIcon />}
+                  onClick={() => {
+                    setFlipped(true);
+                    setPasswordError(false);
+                    setPassword("");
+                  }}
+                  sx={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}
+                >
                   Är du admin?
                 </Button>
               </Box>
             </div>
 
-            {/* BAKSIDA — Admin */}
+            {/* Baksida - admin */}
             <div className="flip-back">
               <Box width="100%">
                 <AdminPanelSettingsIcon sx={{ fontSize: 70, color: "#7c4dff", mb: 1 }} />
@@ -127,11 +163,20 @@ export default function WelcomeScreen({ onSelectRole }) {
                 <Typography variant="body2" color="rgba(255,255,255,0.6)" mb={2}>
                   Ange lösenord för att komma in som admin.
                 </Typography>
+
+                {/* Fält för admin-lösenord */}
                 <TextField
-                  label="Lösenord" type="password" fullWidth value={password}
-                  onChange={(e) => { setPassword(e.target.value); setPasswordError(false); }}
+                  label="Lösenord"
+                  type="password"
+                  fullWidth
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError(false);
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
-                  error={passwordError} size="small"
+                  error={passwordError}
+                  size="small"
                   sx={{
                     mb: 1,
                     "& .MuiOutlinedInput-root": { color: "white" },
@@ -139,18 +184,39 @@ export default function WelcomeScreen({ onSelectRole }) {
                     "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(124,77,255,0.5)" },
                   }}
                 />
+
+                {/* Visas om lösenordet är fel */}
                 {passwordError && (
-                  <Alert severity="error" sx={{ mb: 1, py: 0 }}>Fel lösenord!</Alert>
+                  <Alert severity="error" sx={{ mb: 1, py: 0 }}>
+                    Fel lösenord!
+                  </Alert>
                 )}
               </Box>
+
               <Box width="100%" display="flex" flexDirection="column" gap={1}>
-                <Button variant="contained" color="primary" fullWidth size="large"
-                  onClick={handleAdminLogin}>
+                {/* Loggar in som admin */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  size="large"
+                  onClick={handleAdminLogin}
+                >
                   Logga in som admin
                 </Button>
-                <Button variant="text" fullWidth startIcon={<FlipCameraAndroidIcon />}
-                  onClick={() => { setFlipped(false); setPasswordError(false); setPassword(""); }}
-                  sx={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>
+
+                {/* Vänder tillbaka till kundsidan */}
+                <Button
+                  variant="text"
+                  fullWidth
+                  startIcon={<FlipCameraAndroidIcon />}
+                  onClick={() => {
+                    setFlipped(false);
+                    setPasswordError(false);
+                    setPassword("");
+                  }}
+                  sx={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}
+                >
                   Tillbaka till kund
                 </Button>
               </Box>
